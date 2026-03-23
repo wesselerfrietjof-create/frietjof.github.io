@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Mein Mental Health Projekt</title>
+    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville&display=swap" rel="stylesheet">
+</head>
+
+<script>
+
+let step = 1;
+let letzteKategorie = "";
+let chatAktiv = true;
+
+// zufällige Antwort
+function randomAntwort(array) {
+    return array[Math.floor(Math.random() * array.length)];
+}
+
+// Nachricht anzeigen
+function addMessage(text, sender) {
+    let chatbox = document.getElementById("chatbox");
+
+    let msg = document.createElement("div");
+    msg.classList.add("message", sender);
+    msg.innerText = text;
+
+    chatbox.appendChild(msg);
+    chatbox.scrollTop = chatbox.scrollHeight;
+}
+
+// Tipp-Animation
+function showTyping() {
+    let chatbox = document.getElementById("chatbox");
+
+    let typing = document.createElement("div");
+    typing.classList.add("message", "bot");
+
+    typing.innerHTML = `
+        <div class="typing">
+            <span></span><span></span><span></span>
+        </div>
+    `;
+
+    typing.id = "typingIndicator";
+
+    chatbox.appendChild(typing);
+    chatbox.scrollTop = chatbox.scrollHeight;
+}
+
+function removeTyping() {
+    let typing = document.getElementById("typingIndicator");
+    if (typing) typing.remove();
+}
+
+// 🔹 bessere Erkennung
+function erkenneKategorie(input) {
+
+    // NEGATIV zuerst prüfen (wichtig!)
+    let negativ = [
+        "nicht gut", "gar nicht gut", "schlecht", "mies",
+        "traurig", "leer", "alleine", "einsam",
+        "überfordert", "stress", "kein bock", "kaputt",
+        "fertig", "down", "lost"
+    ];
+
+    let positiv = [
+        "gut", "besser", "happy", "glücklich",
+        "läuft", "nice", "stabil", "freue mich",
+        "zufrieden"
+    ];
+
+    for (let wort of negativ) {
+        if (input.includes(wort)) return "schlecht";
+    }
+
+    for (let wort of positiv) {
+        if (input.includes(wort)) return "gut";
+    }
+
+    return "neutral";
+}
+
+function antwortGenerieren() {
+
+    if (!chatAktiv) return;
+
+    let inputField = document.getElementById("userInput");
+    let input = inputField.value.toLowerCase();
+
+    if (input.trim() === "") return;
+
+    addMessage(inputField.value, "user");
+    inputField.value = "";
+
+    let antwort1 = "";
+    let antwort2 = "";
+
+    // STEP 1
+    if (step === 1) {
+
+        let kategorie = erkenneKategorie(input);
+        letzteKategorie = kategorie;
+
+        if (kategorie === "schlecht") {
+            antwort1 = randomAntwort([
+                "Das klingt gerade echt schwer.",
+                "Das fühlt sich nach ziemlich viel an.",
+                "Irgendwas belastet dich gerade ziemlich, oder?"
+            ]);
+
+            antwort2 = "Was genau geht dir gerade am meisten im Kopf rum?";
+        }
+
+        else if (kategorie === "gut") {
+            antwort1 = randomAntwort([
+                "Das klingt ehrlich gut.",
+                "Freut mich, das so zu hören.",
+                "Das wirkt gerade ziemlich stabil."
+            ]);
+
+            antwort2 = "Was genau sorgt gerade dafür, dass es sich so anfühlt?";
+        }
+
+        else {
+            antwort1 = "Ich bin mir noch nicht ganz sicher, wie es dir gerade geht.";
+            antwort2 = "Magst du ein bisschen mehr dazu sagen?";
+        }
+
+        step = 2;
+    }
+
+    // STEP 2 (Abschluss)
+    else {
+
+        if (letzteKategorie === "schlecht") {
+            antwort1 = randomAntwort([
+                "Ich versteh, dass sich das gerade viel anfühlt.",
+                "Das ist echt keine leichte Situation.",
+                "Das kann einen ziemlich runterziehen."
+            ]);
+
+            antwort2 = randomAntwort([
+                "Du musst das nicht alles auf einmal lösen.",
+                "Vielleicht reicht es erstmal, einen kleinen Schritt zu machen.",
+                "Auch wenn es sich gerade nicht so anfühlt – sowas geht vorbei."
+            ]);
+        }
+
+        else if (letzteKategorie === "gut") {
+            antwort1 = randomAntwort([
+                "Das ist echt schön zu hören.",
+                "Genau solche Momente sind wichtig.",
+                "Das wirkt richtig positiv."
+            ]);
+
+            antwort2 = randomAntwort([
+                "Versuch, das bewusst wahrzunehmen.",
+                "Sowas darf ruhig auch mal bleiben.",
+                "Das gibt dir wahrscheinlich mehr Energie, als du denkst."
+            ]);
+        }
+
+        else {
+            antwort1 = "Danke, dass du das geteilt hast.";
+            antwort2 = "Manchmal hilft es schon, es einfach mal auszusprechen.";
+        }
+
+        step = 1;
+        chatAktiv = false;
+
+        // Chat beenden + Hinweis
+        setTimeout(() => {
+            addMessage(antwort1, "bot");
+
+            setTimeout(() => {
+                addMessage(antwort2, "bot");
+
+                setTimeout(() => {
+                    addMessage("Wenn du nochmal schreiben willst, starte einfach ein neues Gespräch.", "bot");
+                }, 800);
+
+            }, 800);
+
+        }, 800);
+
+        document.getElementById("userInput").disabled = true;
+
+        return;
+    }
+
+    // STEP 1 Antwort mit Animation
+    showTyping();
+
+    setTimeout(() => {
+        removeTyping();
+        addMessage(antwort1, "bot");
+
+        setTimeout(() => {
+            addMessage(antwort2, "bot");
+        }, 700);
+
+    }, 900);
+}
+
+</script>
+
+<script>
+
+let gedanken = [
+    "Du musst nicht heute alles klären.",
+    "Manchmal ist es genug, einfach weiterzugehen.",
+    "Nicht jeder Tag muss produktiv sein.",
+    "Du darfst dir Zeit lassen.",
+    "Auch kleine Schritte zählen."
+];
+
+function zeigeGedanke() {
+    let random = gedanken[Math.floor(Math.random() * gedanken.length)];
+    document.getElementById("dailyThought").innerText = "→ " + random;
+}
+
+zeigeGedanke();
+
+</script>
+
+<body>
+
+<div class="container">
+
+    <div class="header">
+
+        <div class="profil-container">
+            <img src="profil.jpg" alt="Frietjof" class="profilbild">
+
+            <div class="skizze">
+                <p>das bin ich :)</p>
+            </div>
+        </div>
+
+        <h1>Hi, ich bin Frietjof</h1>
+
+    </div>
+
+    <p class="intro">
+        Ich studiere Medieninformatik und arbeite daran, eine App zu entwickeln,
+        die Menschen im Umgang mit ihrer mentalen Gesundheit unterstützt.
+    </p>
+
+    <h2>Warum ich das mache</h2>
+
+    <p>
+        Für mich ist Mental Health nichts Theoretisches. Es ist etwas, das mich schon seit Jahren begleitet.
+    </p>
+
+    <p>
+        Während meiner Abiturzeit hat es angefangen. Ich hatte oft das Gefühl,
+        nicht richtig dazuzugehören, irgendwie fehl am Platz zu sein.
+        Als würde ich einfach nicht wirklich Teil von irgendwas sein.
+    </p>
+
+    <p>
+        Dieses Gefühl hat sich durchgezogen – bis heute. Es hat vieles schwieriger gemacht:
+        Anschluss finden, Selbstvertrauen aufbauen, einfach normal seinen Weg gehen.
+    </p>
+
+    <p>
+        Ich glaube, mentale Gesundheit und Selbstbewusstsein hängen extrem stark zusammen.
+        Wenn es dir mental nicht gut geht, ist es verdammt schwer, wirklich an dich selbst zu glauben.
+    </p>
+
+    <h2>Meine Idee</h2>
+
+    <p>
+        Genau deshalb möchte ich eine App entwickeln, die sich nicht wie ein kaltes Tool anfühlt,
+        sondern wie ein ruhiger, ehrlicher Begleiter.
+    </p>
+
+    <p>
+        Kein Druck. Keine Verpflichtungen. Kein „du musst jetzt alles ändern“.
+        Sondern einfach ein Ort, an dem man kurz ehrlich sein kann.
+    </p>
+
+    <p>
+        Ich weiß noch nicht genau, wohin das Ganze führt.
+        Aber ich weiß, dass ich etwas bauen will, das sich für Menschen wirklich gut anfühlt.
+    </p>
+
+    <h2>Was diese App werden soll</h2>
+
+    <p>
+        Ich möchte eine App bauen, die sich nicht wie ein Tool anfühlt,
+        sondern eher wie jemand, mit dem man ehrlich reden kann.
+    </p>
+
+    <div class="features">
+
+    <div class="feature">
+        <h3>Zuhören</h3>
+        <p>
+            Ein Ort, an dem du einfach schreiben kannst, was gerade in deinem Kopf ist –
+            ohne bewertet zu werden.
+        </p>
+    </div>
+
+    <div class="feature">
+        <h3>Verstehen</h3>
+        <p>
+            Die App soll nicht nur reagieren, sondern versuchen, dich wirklich zu verstehen
+            und auf dich einzugehen.
+        </p>
+    </div>
+
+    <div class="feature">
+        <h3>Reflektieren</h3>
+        <p>
+            Dir helfen, deine Gedanken zu sortieren und Muster zu erkennen,
+            die dir selbst vielleicht gar nicht auffallen.
+        </p>
+    </div>
+
+    <div class="feature">
+        <h3>Unterstützen</h3>
+        <p>
+            Kleine Impulse geben, die dir helfen können, dich Schritt für Schritt besser zu fühlen –
+            ohne Druck.
+        </p>
+    </div>
+    <div class="demo">
+
+    <h2>Probier es aus</h2>
+
+    <div id="chatbox" class="chatbox"></div>
+
+    <div class="input-area">
+        <input id="userInput" type="text" placeholder="Erzähl einfach, wie es dir gerade geht...">
+        <button onclick="antwortGenerieren()">Senden</button>
+    </div>
+
+</div>
+
+    </div>
+
+    <p>
+           Das ist kein fertiges Produkt – sondern etwas, das Schritt für Schritt wächst.
+           Genau so, wie man selbst auch wächst.
+    </p>
+
+    <h2>Wo ich gerade stehe</h2>
+
+    <p>
+        Ich stehe noch ganz am Anfang und bringe mir Programmieren selbst bei.
+        Schritt für Schritt arbeite ich daran, diese Idee Realität werden zu lassen.
+    </p>
+
+    <h2>Unterstützen</h2>
+
+    <p>
+        Wenn du meine Idee gut findest und mich auf diesem Weg unterstützen möchtest:
+    </p>
+
+    <a class="paypal-button" href="https://paypal.me/Frietjof" target="_blank">
+    <span class="paypal-logo">P</span>
+    Mit PayPal unterstützen
+    </a>
+
+    <p class="zitat">
+    „Mir ist wichtiger, wie sich mein Leben für mich anfühlt,
+    als wie es nach außen wirkt.“
+    <br>
+    <span class="signatur">– Denk mal drüber nach.</span>
+    </p>
+
+    <p id="dailyThought" class="zitat"></p>
+</div>
+
+</body>
+</html>
