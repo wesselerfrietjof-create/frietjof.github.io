@@ -284,3 +284,7 @@ paypal-button {
 .feedback-form button:hover {
     opacity: 0.9;
 }
+iframe {
+    margin-top: 20px;
+    border-radius: 10px;
+}
